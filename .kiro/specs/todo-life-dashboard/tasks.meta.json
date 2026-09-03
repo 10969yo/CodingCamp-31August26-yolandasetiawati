@@ -1,0 +1,292 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create the three project files: `index.html`, `css/style.css`, `js/app.js`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447318824
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447330808
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447384449
+      }
+    ],
+    "2.1 Implement CSS custom properties, reset, and base typography in `css/style.css`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447318938
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447394621
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447636027
+      }
+    ],
+    "2.2 Implement responsive grid layout and widget card styles": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319034
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447647531
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447723544
+      }
+    ],
+    "2.3 Implement widget-specific and component styles": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319104
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447742355
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447844346
+      }
+    ],
+    "3.1 Implement `storage.isAvailable()`, `storage.read(key)`, and `storage.write(key, data)`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319163
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447654107
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447729776
+      }
+    ],
+    "4.1 Implement `clock.getGreeting(hour)` pure function": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319208
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447748513
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447851435
+      }
+    ],
+    "4.2 Implement `clock.init()` and `clock.tick()`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319255
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788448191332
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788448314172
+      }
+    ],
+    "5. Checkpoint — Storage and Clock": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319313
+      }
+    ],
+    "6.1 Implement `timer.init()` and `timer.render()`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319390
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788448197864
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788448319432
+      }
+    ],
+    "6.2 Implement `timer.start()`, `timer.stop()`, `timer.reset()`, and `timer.tick()`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319466
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788448325794
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788448420148
+      }
+    ],
+    "7.1 Implement `tasks.add(description)` and `syncTasks()` helper": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319512
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788448425402
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788448965961
+      }
+    ],
+    "7.2 Implement `tasks.edit(id, newDescription)` and `tasks.toggle(id)`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319559
+      },
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788448971423
+      }
+    ],
+    "7.3 Implement `tasks.delete(id)` and `tasks.render()`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319606
+      }
+    ],
+    "7.4 Implement `tasks.init()` — wire up form submission and load from state": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319644
+      }
+    ],
+    "8. Checkpoint — Task Manager": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319689
+      }
+    ],
+    "9.1 Implement `links.validateUrl(url)` and `links.add(label, url)`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319726
+      }
+    ],
+    "9.2 Implement `links.delete(id)` and `links.render()`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319773
+      }
+    ],
+    "9.3 Implement `links.init()` — wire up form submission and load from state": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319825
+      }
+    ],
+    "10.1 Implement the `state` object and bootstrap sequence in the `DOMContentLoaded` handler": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319871
+      }
+    ],
+    "10.2 Implement the global `window.onerror` handler and non-blocking notification utility": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319915
+      }
+    ],
+    "11. Final checkpoint — Full integration": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447319993
+      }
+    ],
+    "1. Project scaffolding — file structure and HTML skeleton": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447384496
+      }
+    ],
+    "3. Storage module — `[2] STORAGE MODULE` section of `app.js`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447729922
+      }
+    ],
+    "2. CSS foundation — design tokens, reset, layout, and responsive grid": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788447844566
+      }
+    ],
+    "4. Greeting / Clock widget — `[4] GREETING / CLOCK WIDGET` section of `app.js`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788448314289
+      }
+    ],
+    "6. Focus Timer widget — `[5] TIMER WIDGET` section of `app.js`": [
+      {
+        "executionId": "41ddfe58-ca7c-4b1f-a28a-83048eb178af",
+        "chatSessionId": "sess_e51be694-2cc0-4d88-8443-6c19df6f8922",
+        "timestamp": 1788448420217
+      }
+    ]
+  }
+}

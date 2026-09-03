@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo Life Dashboard</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <main class="dashboard">
+
+      <!-- Greeting & Clock Widget -->
+      <section class="widget widget--greeting">
+        <h2 id="clock-greeting"></h2>
+        <p id="clock-time"></p>
+        <p id="clock-date"></p>
+        <p id="clock-error" class="is-hidden" role="alert"></p>
+      </section>
+
+      <!-- Focus Timer Widget -->
+      <section class="widget widget--timer">
+        <h2>Focus Timer</h2>
+        <p id="timer-display">25:00</p>
+        <div class="timer__controls">
+          <button id="timer-start" type="button">Start</button>
+          <button id="timer-stop" type="button" disabled>Stop</button>
+          <button id="timer-reset" type="button">Reset</button>
+        </div>
+        <p id="timer-complete" class="is-hidden" role="status">Session complete!</p>
+      </section>
+
+      <!-- Task Manager Widget -->
+      <section class="widget widget--tasks">
+        <h2>Tasks</h2>
+        <form id="task-form" novalidate>
+          <input
+            id="task-input"
+            type="text"
+            maxlength="500"
+            placeholder="Add a new task…"
+            aria-label="New task description"
+          />
+          <button id="task-submit" type="submit">Add</button>
+        </form>
+        <p id="task-error" class="is-hidden" role="alert"></p>
+        <ul id="task-list"></ul>
+        <p id="task-storage-error" class="is-hidden" role="alert"></p>
+      </section>
+
+      <!-- Quick Links Widget -->
+      <section class="widget widget--links">
+        <h2>Quick Links</h2>
+        <form id="link-form" novalidate>
+          <input
+            id="link-label-input"
+            type="text"
+            maxlength="50"
+            placeholder="Label"
+            aria-label="Link label"
+          />
+          <input
+            id="link-url-input"
+            type="url"
+            maxlength="2048"
+            placeholder="https://example.com"
+            aria-label="Link URL"
+          />
+          <button id="link-submit" type="submit">Add Link</button>
+        </form>
+        <p id="link-error" class="is-hidden" role="alert"></p>
+        <div id="link-list"></div>
+        <p id="link-storage-error" class="is-hidden" role="alert"></p>
+      </section>
+
+    </main>
+
+    <script src="js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,477 @@
+/* Todo Life Dashboard — css/style.css */
+
+/* ============================================================
+   [1] CUSTOM PROPERTIES (design tokens)
+   ============================================================ */
+:root {
+  /* Color palette (max 5 distinct colors) */
+  --color-bg:      #f5f5f5;  /* page background */
+  --color-surface: #ffffff;  /* widget card background */
+  --color-primary: #4f6ef7;  /* accent / interactive */
+  --color-text:    #1a1a2e;  /* primary body text */
+  --color-muted:   #6b7280;  /* secondary text / disabled states */
+
+  /* Font families (max 2 + system fallbacks) */
+  --font-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo,
+               Consolas, "DejaVu Sans Mono", monospace;
+
+  /* Spacing scale (8px base) */
+  --spacing-xs:  4px;   /* 0.5 × 8 */
+  --spacing-sm:  8px;   /* 1 × 8   */
+  --spacing-md:  16px;  /* 2 × 8   */
+  --spacing-lg:  24px;  /* 3 × 8   */
+  --spacing-xl:  48px;  /* 6 × 8   */
+
+  /* Shape & elevation */
+  --radius: 8px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================================
+   [2] RESET / BASE
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+body {
+  background: linear-gradient(
+    135deg,
+    #8108ad 0%,
+    #5115e9 50%,
+    #4d91e8 100%
+  );
+  ...
+}
+
+/* ============================================================
+   [3] LAYOUT — top-level dashboard container
+   ============================================================ */
+.dashboard {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   [3] LAYOUT — continued (responsive grid)
+   ============================================================ */
+
+/* Mobile-first: single-column stack */
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);        /* 16px between widgets on mobile */
+  padding: var(--spacing-md);
+}
+
+/* ≥768px: two-column grid */
+@media (min-width: 768px) {
+  .dashboard {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);      /* 24px between widgets on desktop */
+    padding: var(--spacing-lg);
+  }
+}
+
+/* ============================================================
+   [4] WIDGET BASE
+   ============================================================ */
+.widget {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--spacing-lg);    /* 24px — satisfies ≥8px, ≤48px rule */
+  min-width: 280px;
+  max-width: 100%;
+  /* Prevent a single widget from overflowing its grid cell */
+  overflow: hidden;
+  word-break: break-word;
+}
+
+/* ============================================================
+   [5] WIDGET-SPECIFIC
+   ============================================================ */
+
+/* --- Greeting & Clock --- */
+.widget--greeting {}
+
+.widget--greeting h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+#clock-time {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-xs);
+}
+
+#clock-date {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+/* --- Focus Timer --- */
+.widget--timer {}
+
+.widget--timer h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+#timer-display {
+  font-family: var(--font-mono);
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+  margin: var(--spacing-md) 0;
+  letter-spacing: 0.05em;
+  transition: color 0.2s ease;
+}
+
+.timer__controls {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Session-complete state */
+.timer--complete #timer-display {
+  color: var(--color-primary);
+}
+
+/* --- Task Manager --- */
+.widget--tasks {}
+
+.widget--tasks h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+#task-form {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+#task-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+}
+
+/* --- Quick Links --- */
+.widget--links {}
+
+.widget--links h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+#link-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* --- Quick Links list --- */
+#link-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-md);
+  padding: 0;
+}
+
+.link-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  min-height: 2.5rem;
+  transition: background-color 0.15s ease;
+}
+
+.link-item:hover {
+  background: #eef2ff;
+}
+
+.link-item a {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9375rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.link-item a:hover {
+  text-decoration: underline;
+}
+
+.link-item button {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  padding: 6px 12px;
+}
+
+/* ============================================================
+   [6] COMPONENT STYLES
+   ============================================================ */
+
+/* --- Buttons --- */
+button {
+  font-family: var(--font-base);
+  font-size: 0.875rem;           /* 14px — satisfies ≥14px body-text rule */
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: var(--color-primary);
+  color: #ffffff;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+  white-space: nowrap;
+}
+
+button:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+button:disabled {
+  background: var(--color-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* --- Inputs --- */
+input[type="text"],
+input[type="url"],
+input[type="search"] {
+  font-family: var(--font-base);
+  font-size: 1rem;               /* 16px — prevents iOS auto-zoom */
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  width: 100%;
+  transition: border-color 0.15s ease;
+}
+
+input[type="text"]:hover,
+input[type="url"]:hover {
+  border-color: var(--color-primary);
+}
+
+/* --- Checkboxes --- */
+input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* --- Error / alert messages --- */
+[role="alert"],
+[role="status"] {
+  font-size: 0.875rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius);
+  margin-top: var(--spacing-xs);
+}
+
+[role="alert"] {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+[role="status"] {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+/* ============================================================
+   [7] UTILITY / STATE CLASSES
+   ============================================================ */
+
+/* Hide elements (used for error panels, timer-complete indicator, etc.) */
+.is-hidden {
+  display: none !important;
+}
+
+/* Completed task — strikethrough text */
+.task--completed {
+  text-decoration: line-through;
+  color: var(--color-muted);
+}
+
+/* Timer completion state — applied to the widget root */
+.timer--complete {
+  /* colour change handled by child selector above */
+}
+
+/* Session-complete message: visible once JS removes .is-hidden */
+#timer-complete {
+  text-align: center;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-top: var(--spacing-sm);
+}
+
+/* ============================================================
+   [8] ADDITIONAL COMPONENT STYLES
+   ============================================================ */
+
+/* --- Danger button (delete actions) --- */
+.btn--danger {
+  background: #dc2626;    /* red-600 */
+  color: #ffffff;
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: #b91c1c;    /* red-700 — darker on hover */
+  opacity: 1;             /* override the default opacity hover */
+}
+
+/* --- Task list item layout --- */
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  min-height: 2.5rem;
+  transition: background-color 0.15s ease;
+}
+
+.task-item:hover {
+  background: #eef2ff;
+}
+
+/* Task checkbox */
+.task-item input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* Task description */
+.task-item span {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9375rem;
+  word-break: break-word;
+}
+
+/* Completed task */
+.task-item span.task-completed {
+  text-decoration: line-through;
+  color: var(--color-muted);
+}
+
+/* Task buttons */
+.task-item button {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  padding: 6px 12px;
+}
+
+/* Keep buttons together */
+.task-item button + button {
+  margin-left: -4px;
+}
+
+/* --- Non-blocking notification banner --- */
+.notification {
+  position: fixed;
+  bottom: var(--spacing-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 280px;
+  max-width: min(90vw, 480px);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  font-size: 0.875rem;
+  font-weight: 500;
+  z-index: 1000;
+  /* Animate in */
+  animation: notif-slide-up 0.2s ease forwards;
+}
+
+.notification--warning {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.notification--error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+@keyframes notif-slide-up {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ============================================================
+   [9] FOCUS INDICATORS
+   — applied globally to all interactive elements
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+
+/* --- Delete buttons --- */
+.task-item button:last-child,
+.link-item button {
+  background: #dc2626;
+}
+
+.task-item button:last-child:hover:not(:disabled),
+.link-item button:hover:not(:disabled) {
+  background: #b91c1c;
+}
