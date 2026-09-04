@@ -4,6 +4,69 @@
    [1] CUSTOM PROPERTIES (design tokens)
    ============================================================ */
 :root {
+
+  /* ============================================================
+   LIGHT / DARK MODE
+   ============================================================ */
+
+body {
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* ============================================================
+   LIGHT / DARK MODE
+   ============================================================ */
+
+body {
+  transition: background 0.25s ease;
+}
+
+body.dark-mode {
+  background: #111827;
+}
+
+.theme-toggle {
+  margin-top: var(--spacing-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-muted);
+}
+
+.theme-toggle:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: #ffffff;
+  opacity: 1;
+}
+
+body.dark-mode .task-item:hover,
+body.dark-mode .link-item:hover {
+  background: #374151;
+}
+
+/* Dark mode inputs */
+body.dark-mode input[type="text"],
+body.dark-mode input[type="url"],
+body.dark-mode input[type="search"],
+body.dark-mode #timer-duration {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-color: var(--color-muted);
+}
+
+/* Dark mode theme button */
+.theme-toggle {
+  margin-top: var(--spacing-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-muted);
+}
+
+.theme-toggle:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: #ffffff;
+  opacity: 1;
+}
+
   /* Color palette (max 5 distinct colors) */
   --color-bg:      #f5f5f5;  /* page background */
   --color-surface: #ffffff;  /* widget card background */
@@ -150,6 +213,43 @@ body {
   gap: var(--spacing-sm);
   justify-content: center;
   flex-wrap: wrap;
+}
+
+.timer__duration {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-lg);
+}
+
+.timer__duration label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+#timer-duration {
+  font-family: var(--font-base);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  width: 100%;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+#timer-duration:hover {
+  border-color: var(--color-primary);
+}
+
+#timer-duration:disabled {
+  color: var(--color-muted);
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* Session-complete state */
@@ -474,4 +574,24 @@ input[type="checkbox"] {
 .task-item button:last-child:hover:not(:disabled),
 .link-item button:hover:not(:disabled) {
   background: #b91c1c;
+}
+
+/* ============================================================
+   CUSTOM NAME
+   ============================================================ */
+
+.custom-name {
+  margin-top: var(--spacing-lg);
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.custom-name input {
+  flex: 1;
+  min-width: 0;
+}
+
+.custom-name button {
+  white-space: nowrap;
 }

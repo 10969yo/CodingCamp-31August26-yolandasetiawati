@@ -1,863 +1,1862 @@
 (function () {
+
   'use strict';
 
-  /* =========================================================
-   * [1] CONSTANTS & CONFIG
-   * ========================================================= */
 
   /* =========================================================
-   * [2] STORAGE MODULE
-   * ========================================================= */
+     [1] CONSTANTS & CONFIG
+     ========================================================= */
+
+
+  /* =========================================================
+     [2] STORAGE MODULE
+     ========================================================= */
 
   const storage = (function () {
+
     // Tracks keys whose stored values failed JSON.parse
     const _corruptKeys = new Set();
 
+
     /**
-     * Tests whether localStorage is accessible by performing a
-     * probe write/read/remove. Returns true if available, false otherwise.
+     * Tests whether localStorage is accessible.
      * @returns {boolean}
      */
     function isAvailable() {
+
       const TEST_KEY = '__tdl_test__';
+
       try {
+
         localStorage.setItem(TEST_KEY, '1');
         localStorage.removeItem(TEST_KEY);
+
         return true;
+
       } catch (_e) {
+
         return false;
       }
     }
 
+
     /**
-     * Reads and JSON-parses the value stored under `key`.
-     * Returns the parsed value, or null if the key is absent or the
-     * value is not valid JSON. Sets an internal corruption flag for
-     * the key when a parse error occurs.
+     * Reads and JSON-parses the value stored under key.
      * @param {string} key
      * @returns {any|null}
      */
     function read(key) {
+
       try {
+
         const raw = localStorage.getItem(key);
+
         if (raw === null) {
           return null;
         }
+
         return JSON.parse(raw);
+
       } catch (_e) {
-        // JSON.parse failure — mark the key as corrupt
+
         _corruptKeys.add(key);
+
         return null;
       }
     }
 
+
     /**
-     * Returns true if the last read for `key` encountered a JSON
-     * parse error, false otherwise. Used by the bootstrap to decide
-     * whether to show a corruption warning banner.
+     * Returns true if the last read for key encountered
+     * a JSON parse error.
      * @param {string} key
      * @returns {boolean}
      */
     function isCorrupt(key) {
+
       return _corruptKeys.has(key);
     }
 
+
     /**
-     * JSON-stringifies `data` and writes it to localStorage under `key`.
-     * Returns true on success, false if the write throws (e.g. storage full
-     * or access denied).
+     * JSON-stringifies data and writes it to localStorage.
      * @param {string} key
      * @param {any} data
      * @returns {boolean}
      */
     function write(key, data) {
+
       try {
-        localStorage.setItem(key, JSON.stringify(data));
+
+        localStorage.setItem(
+          key,
+          JSON.stringify(data)
+        );
+
         return true;
+
       } catch (_e) {
+
         return false;
       }
     }
 
-    return { isAvailable, read, isCorrupt, write };
+
+    return {
+      isAvailable,
+      read,
+      isCorrupt,
+      write
+    };
+
   })();
 
+
   /* =========================================================
-   * [3] STATE
-   * ========================================================= */
+     [3] STATE
+     ========================================================= */
 
   const state = {
-    tasks: [],       // Task[] — loaded from tdl_tasks on boot
-    links: [],       // Link[] — loaded from tdl_links on boot
+
+    tasks: [],
+
+    links: [],
+
     timer: {
-      remaining: 1500,   // seconds remaining (default 25:00)
-      running:   false,  // whether the countdown interval is active
-      intervalId: null   // reference returned by setInterval
+
+      // Default Pomodoro duration = 25 minutes
+      duration: 1500,
+
+      remaining: 1500,
+
+      running: false,
+
+      intervalId: null
     }
   };
 
-  /* =========================================================
-   * [4] GREETING / CLOCK WIDGET
-   * ========================================================= */
 
+  /* =========================================================
+   [4] LIGHT / DARK MODE
+   ========================================================= */
+const theme = (function () {
+  let _elToggle = null;
+
+  const STORAGE_KEY = 'tdl_theme';
+
+  function applyTheme(themeName) {
+    if (themeName === 'dark') {
+      document.body.classList.add('dark-mode');
+
+      if (_elToggle) {
+        _elToggle.textContent = '☀️ Light Mode';
+        _elToggle.setAttribute(
+          'aria-label',
+          'Switch to light mode'
+        );
+      }
+    } else {
+      document.body.classList.remove('dark-mode');
+
+      if (_elToggle) {
+        _elToggle.textContent = '🌙 Dark Mode';
+        _elToggle.setAttribute(
+          'aria-label',
+          'Switch to dark mode'
+        );
+      }
+    }
+  }
+
+  function init() {
+    _elToggle =
+      document.getElementById('theme-toggle');
+
+    const savedTheme =
+      localStorage.getItem(STORAGE_KEY);
+
+    if (savedTheme === 'dark') {
+      applyTheme('dark');
+    } else {
+      applyTheme('light');
+    }
+
+    if (_elToggle) {
+      _elToggle.addEventListener(
+        'click',
+        function () {
+          const isDark =
+            document.body.classList.contains(
+              'dark-mode'
+            );
+
+          const newTheme =
+            isDark ? 'light' : 'dark';
+
+          applyTheme(newTheme);
+
+          localStorage.setItem(
+            STORAGE_KEY,
+            newTheme
+          );
+        }
+      );
+    }
+  }
+
+  return {
+    init
+  };
+})();
+
+  const customName = (function () {
+    let _elInput = null;
+    let _elSave = null;
+
+    const STORAGE_KEY = 'tdl_custom_name';
+
+    function init() {
+      _elInput = document.getElementById('name-input');
+      _elSave = document.getElementById('name-save');
+
+      const savedName = localStorage.getItem(STORAGE_KEY);
+
+      if (_elInput && savedName) {
+        _elInput.value = savedName;
+      }
+
+      if (_elSave) {
+        _elSave.addEventListener('click', function () {
+          const name = (_elInput ? _elInput.value : '').trim();
+
+          if (name.length === 0) {
+            localStorage.removeItem(STORAGE_KEY);
+            updateGreeting('');
+            return;
+          }
+
+          localStorage.setItem(STORAGE_KEY, name);
+          updateGreeting(name);
+        });
+      }
+    }
+
+    function getName() {
+      return localStorage.getItem(STORAGE_KEY) || '';
+    }
+
+    function updateGreeting(name) {
+      const greetingElement =
+        document.getElementById('clock-greeting');
+
+      if (!greetingElement) {
+        return;
+      }
+
+      const hour = new Date().getHours();
+
+      let greeting;
+
+      if (hour >= 5 && hour <= 11) {
+        greeting = 'Good Morning';
+      } else if (hour >= 12 && hour <= 17) {
+        greeting = 'Good Afternoon';
+      } else if (hour >= 18 && hour <= 20) {
+        greeting = 'Good Evening';
+      } else {
+        greeting = 'Good Night';
+      }
+
+      greetingElement.textContent =
+        name ? greeting + ', ' + name : greeting;
+    }
+
+    return {
+      init,
+      getName,
+      updateGreeting
+    };
+  })();
+  
   const clock = (function () {
-    // DOM refs — cached by clock.init(), null until then
-    let _elTime     = null;
-    let _elDate     = null;
+
+    let _elTime = null;
+    let _elDate = null;
     let _elGreeting = null;
-    let _elError    = null;
+    let _elError = null;
+
 
     /**
-     * Returns a contextual greeting string for the given local hour.
-     * Covers all 24 hours (total) and returns exactly one string (exclusive).
-     *
-     * hour  5–11  → "Good Morning"
-     * hour 12–17  → "Good Afternoon"
-     * hour 18–20  → "Good Evening"
-     * hour 21–23 or 0–4 → "Good Night"
-     *
-     * @param {number} hour - Integer in [0, 23]
+     * Returns a contextual greeting based on local hour.
+     * @param {number} hour
      * @returns {string}
      */
     function getGreeting(hour) {
+
       if (hour >= 5 && hour <= 11) {
         return 'Good Morning';
       }
+
       if (hour >= 12 && hour <= 17) {
         return 'Good Afternoon';
       }
+
       if (hour >= 18 && hour <= 20) {
         return 'Good Evening';
       }
-      // Covers 21–23 and 0–4
+
       return 'Good Night';
     }
 
+
     /**
-     * Caches DOM references for the clock widget, fires an immediate tick
-     * to populate the display, and schedules a 1-second interval.
+     * Initializes the clock widget.
      */
     function init() {
-      _elTime     = document.getElementById('clock-time');
-      _elDate     = document.getElementById('clock-date');
-      _elGreeting = document.getElementById('clock-greeting');
-      _elError    = document.getElementById('clock-error');
+
+      _elTime =
+        document.getElementById('clock-time');
+
+      _elDate =
+        document.getElementById('clock-date');
+
+      _elGreeting =
+        document.getElementById('clock-greeting');
+
+      _elError =
+        document.getElementById('clock-error');
 
       tick();
+
       setInterval(tick, 1000);
     }
 
+
     /**
-     * Reads the current Date, formats it, and updates the DOM.
-     * On any failure hides the time/date/greeting and shows an error.
+     * Updates the clock display.
      */
     function tick() {
+
       try {
+
         const now = new Date();
 
-        // HH:MM:SS (zero-padded, 24-hour) — Requirement 1.1
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mm = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-        const timeStr = hh + ':' + mm + ':' + ss;
+        const hh =
+          String(now.getHours()).padStart(2, '0');
 
-        // "Weekday, D Month YYYY" — day NOT zero-padded — Requirement 1.2
+        const mm =
+          String(now.getMinutes()).padStart(2, '0');
+
+        const ss =
+          String(now.getSeconds()).padStart(2, '0');
+
+        const timeStr =
+          hh + ':' + mm + ':' + ss;
+
+
         const WEEKDAYS = [
-          'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-          'Thursday', 'Friday', 'Saturday'
+          'Sunday',
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday'
         ];
+
+
         const MONTHS = [
-          'January', 'February', 'March', 'April', 'May', 'June',
-          'July', 'August', 'September', 'October', 'November', 'December'
+          'January',
+          'February',
+          'March',
+          'April',
+          'May',
+          'June',
+          'July',
+          'August',
+          'September',
+          'October',
+          'November',
+          'December'
         ];
+
+
         const dateStr =
-          WEEKDAYS[now.getDay()] + ', ' +
-          now.getDate() + ' ' +
-          MONTHS[now.getMonth()] + ' ' +
+          WEEKDAYS[now.getDay()] +
+          ', ' +
+          now.getDate() +
+          ' ' +
+          MONTHS[now.getMonth()] +
+          ' ' +
           now.getFullYear();
 
-        // Greeting based on local hour — Requirements 1.3–1.6
-        const greeting = getGreeting(now.getHours());
 
-        // Update the DOM
-        if (_elTime)     { _elTime.textContent     = timeStr; }
-        if (_elDate)     { _elDate.textContent     = dateStr; }
-        if (_elGreeting) { _elGreeting.textContent = greeting; }
+        const greeting =
+          getGreeting(now.getHours());
 
-        // Ensure the error element is hidden on a successful tick
-        if (_elError) { _elError.classList.add('is-hidden'); }
+
+        if (_elTime) {
+          _elTime.textContent = timeStr;
+        }
+
+
+        if (_elDate) {
+          _elDate.textContent = dateStr;
+        }
+
+
+        if (_elGreeting) {
+        const name = customName.getName();
+
+        _elGreeting.textContent =
+          name ? greeting + ', ' + name : greeting;
+      }
+
+
+        if (_elError) {
+          _elError.classList.add('is-hidden');
+        }
+
 
       } catch (_e) {
-        // Requirement 1.8: hide partial/stale values; show error message
-        if (_elTime)     { _elTime.textContent     = ''; }
-        if (_elDate)     { _elDate.textContent     = ''; }
-        if (_elGreeting) { _elGreeting.textContent = ''; }
+
+        if (_elTime) {
+          _elTime.textContent = '';
+        }
+
+        if (_elDate) {
+          _elDate.textContent = '';
+        }
+
+        if (_elGreeting) {
+          _elGreeting.textContent = '';
+        }
+
         if (_elError) {
-          _elError.textContent = 'Unable to retrieve the current time.';
-          _elError.classList.remove('is-hidden');
+
+          _elError.textContent =
+            'Unable to retrieve the current time.';
+
+          _elError.classList.remove(
+            'is-hidden'
+          );
         }
       }
     }
 
-    return { getGreeting, init, tick };
+
+    return {
+      getGreeting,
+      init,
+      tick
+    };
+
   })();
 
+
   /* =========================================================
-   * [5] TIMER WIDGET
-   * ========================================================= */
+     [5] TIMER WIDGET
+     ========================================================= */
 
   const timer = (function () {
-    // DOM refs — cached by timer.init(), null until then
-    let _elDisplay  = null;
-    let _elStart    = null;
-    let _elStop     = null;
-    let _elReset    = null;
+
+    let _elDisplay = null;
+    let _elStart = null;
+    let _elStop = null;
+    let _elReset = null;
     let _elComplete = null;
+    let _elDuration = null;
+
 
     /**
-     * Formats a total number of seconds into a "MM:SS" string.
-     * Both minutes and seconds are zero-padded to two digits.
-     * @param {number} totalSeconds - Non-negative integer
-     * @returns {string} e.g. "25:00", "04:37"
+     * Formats seconds into MM:SS.
+     * @param {number} totalSeconds
+     * @returns {string}
      */
     function _formatTime(totalSeconds) {
-      const mins = Math.floor(totalSeconds / 60);
-      const secs = totalSeconds % 60;
-      return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+
+      const mins =
+        Math.floor(totalSeconds / 60);
+
+      const secs =
+        totalSeconds % 60;
+
+
+      return (
+
+        String(mins).padStart(2, '0') +
+
+        ':' +
+
+        String(secs).padStart(2, '0')
+
+      );
     }
 
+
     /**
-     * Renders the current timer state to the DOM:
-     * - Updates #timer-display with the formatted MM:SS remaining time
-     * - Shows/hides the #timer-complete indicator based on remaining === 0
-     * - Syncs disabled attributes on the three control buttons:
-     *     Start  → disabled while timer is running
-     *     Stop   → disabled while timer is NOT running (paused/stopped)
-     *     Reset  → disabled while timer is running
+     * Renders the timer widget.
      */
     function render() {
-      if (!_elDisplay) return; // guard: init not yet called
 
-      // Update countdown display
-      _elDisplay.textContent = _formatTime(state.timer.remaining);
-
-      // Session-complete indicator: visible only when remaining hits 0
-      if (state.timer.remaining === 0) {
-        _elComplete.classList.remove('is-hidden');
-      } else {
-        _elComplete.classList.add('is-hidden');
+      if (!_elDisplay) {
+        return;
       }
 
-      // Button disabled states
-      // Start: disabled while running (req 2.8)
-      _elStart.disabled = state.timer.running;
-      // Stop: disabled while NOT running (req 2.9)
-      _elStop.disabled = !state.timer.running;
-      // Reset: disabled while running (req 2.11)
-      _elReset.disabled = state.timer.running;
+
+      _elDisplay.textContent =
+        _formatTime(
+          state.timer.remaining
+        );
+
+
+      if (state.timer.remaining === 0) {
+
+        _elComplete.classList.remove(
+          'is-hidden'
+        );
+
+      } else {
+
+        _elComplete.classList.add(
+          'is-hidden'
+        );
+      }
+
+
+      _elStart.disabled =
+        state.timer.running;
+
+
+      _elStop.disabled =
+        !state.timer.running;
+
+
+      _elReset.disabled =
+        state.timer.running;
+
+
+      // Duration cannot be changed while timer runs
+      if (_elDuration) {
+
+        _elDuration.disabled =
+          state.timer.running;
+      }
     }
 
+
     /**
-     * Caches DOM references, renders the initial state, and binds
-     * click handlers for the Start, Stop, and Reset buttons.
+     * Changes the Pomodoro duration.
+     * @param {number} seconds
+     */
+    function changeDuration(seconds) {
+
+      if (state.timer.running) {
+        return;
+      }
+
+
+      state.timer.duration = seconds;
+
+      state.timer.remaining = seconds;
+
+
+      if (_elComplete) {
+
+        _elComplete.classList.add(
+          'is-hidden'
+        );
+      }
+
+
+      render();
+    }
+
+
+    /**
+     * Initializes the timer widget.
      */
     function init() {
-      _elDisplay  = document.getElementById('timer-display');
-      _elStart    = document.getElementById('timer-start');
-      _elStop     = document.getElementById('timer-stop');
-      _elReset    = document.getElementById('timer-reset');
-      _elComplete = document.getElementById('timer-complete');
 
-      // Render the initial 25:00 state (req 2.1, 2.2)
+      _elDisplay =
+        document.getElementById(
+          'timer-display'
+        );
+
+
+      _elStart =
+        document.getElementById(
+          'timer-start'
+        );
+
+
+      _elStop =
+        document.getElementById(
+          'timer-stop'
+        );
+
+
+      _elReset =
+        document.getElementById(
+          'timer-reset'
+        );
+
+
+      _elComplete =
+        document.getElementById(
+          'timer-complete'
+        );
+
+
+      _elDuration =
+        document.getElementById(
+          'timer-duration'
+        );
+
+
       render();
 
-      // Bind control handlers
-      _elStart.addEventListener('click', function () { timer.start(); });
-      _elStop.addEventListener('click',  function () { timer.stop();  });
-      _elReset.addEventListener('click', function () { timer.reset(); });
+
+      _elStart.addEventListener(
+        'click',
+        function () {
+
+          timer.start();
+        }
+      );
+
+
+      _elStop.addEventListener(
+        'click',
+        function () {
+
+          timer.stop();
+        }
+      );
+
+
+      _elReset.addEventListener(
+        'click',
+        function () {
+
+          timer.reset();
+        }
+      );
+
+
+      if (_elDuration) {
+
+        _elDuration.addEventListener(
+          'change',
+          function () {
+
+            const seconds =
+              Number(_elDuration.value);
+
+            changeDuration(seconds);
+          }
+        );
+      }
     }
 
+
     /**
-     * Starts the countdown. If remaining is already 0, resets to 25:00 first
-     * (Requirement 2.10). Sets running = true, schedules a 1-second interval,
-     * and re-renders the widget.
+     * Starts the countdown.
      */
     function start() {
+
       if (state.timer.remaining === 0) {
+
         timer.reset();
       }
+
+
       state.timer.running = true;
-      state.timer.intervalId = setInterval(function () { timer.tick(); }, 1000);
+
+
+      state.timer.intervalId =
+        setInterval(
+          function () {
+
+            timer.tick();
+
+          },
+          1000
+        );
+
+
       render();
     }
 
+
     /**
-     * Pauses the countdown by clearing the interval. Sets running = false
-     * and re-renders so button disabled states update (Requirement 2.5).
+     * Stops/pauses the countdown.
      */
     function stop() {
-      clearInterval(state.timer.intervalId);
+
+      clearInterval(
+        state.timer.intervalId
+      );
+
+
       state.timer.intervalId = null;
+
       state.timer.running = false;
+
+
       render();
     }
 
+
     /**
-     * Stops any active countdown and restores remaining to 1500 (25:00).
-     * Hides the session-complete indicator and re-renders (Requirement 2.6).
+     * Resets the timer to the selected duration.
      */
     function reset() {
+
       timer.stop();
-      state.timer.remaining = 1500;
+
+
+      state.timer.remaining =
+        state.timer.duration;
+
+
       if (_elComplete) {
-        _elComplete.classList.add('is-hidden');
+
+        _elComplete.classList.add(
+          'is-hidden'
+        );
       }
+
+
       render();
     }
 
+
     /**
-     * Called every second by the interval. Decrements remaining by 1.
-     * Clamps to 0 when the countdown expires, stops the timer, and shows
-     * the session-complete indicator (Requirements 2.4, 2.7).
+     * Decrements the timer by one second.
      */
     function tick() {
+
       state.timer.remaining -= 1;
+
+
       if (state.timer.remaining <= 0) {
+
         state.timer.remaining = 0;
+
+
         timer.stop();
+
+
         if (_elComplete) {
-          _elComplete.classList.remove('is-hidden');
+
+          _elComplete.classList.remove(
+            'is-hidden'
+          );
         }
       }
+
+
       render();
     }
 
-    return { init, render, start, stop, reset, tick };
+
+    return {
+      init,
+      render,
+      start,
+      stop,
+      reset,
+      tick,
+      changeDuration
+    };
+
   })();
 
+
   /* =========================================================
-   * [6] TASK MANAGER WIDGET
-   * ========================================================= */
+     [6] TASK MANAGER WIDGET
+     ========================================================= */
 
   const tasks = (function () {
-    // DOM refs — cached by tasks.init(), null until then
-    let _elInput        = null;
-    let _elError        = null;
+
+    let _elInput = null;
+    let _elError = null;
     let _elStorageError = null;
-    let _elList         = null;
+    let _elList = null;
+
 
     /**
-     * Generates a unique identifier for a new task.
-     * Prefers crypto.randomUUID() when available; falls back to a
-     * timestamp string so the app works in older environments.
+     * Generates a unique task ID.
      * @returns {string}
      */
     function _generateId() {
-      return (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+
+      return (
+
+        typeof crypto !== 'undefined' &&
+
+        typeof crypto.randomUUID === 'function'
+
+      )
+
         ? crypto.randomUUID()
+
         : Date.now().toString();
     }
 
+
     /**
-     * Adds a new task to the list.
-     *
-     * Validation rules (Requirement 3.3):
-     *   - Trim the input string first.
-     *   - Reject if the trimmed string is empty.
-     *   - Reject if the trimmed string exceeds 500 characters.
-     *
-     * On success (Requirement 3.2):
-     *   - Create a Task object with a unique id, the trimmed description,
-     *     and completed = false.
-     *   - Push to state.tasks.
-     *   - Call syncTasks(); on failure roll back the push and show
-     *     #task-storage-error (Requirement 3.11).
-     *   - On success: call tasks.render(), clear the input field,
-     *     and hide #task-error.
-     *
-     * @param {string} description - Raw text from the input field
+     * Adds a new task.
+     * @param {string} description
      */
     function add(description) {
-      const trimmed = (description || '').trim();
 
-      // --- Input validation ---
-      if (trimmed.length === 0 || trimmed.length > 500) {
+      const trimmed =
+        (description || '').trim();
+
+
+      if (
+        trimmed.length === 0 ||
+        trimmed.length > 500
+      ) {
+
         if (_elError) {
-          _elError.textContent = trimmed.length === 0
-            ? 'Task description is required.'
-            : 'Task description must be 500 characters or fewer.';
-          _elError.classList.remove('is-hidden');
+
+          _elError.textContent =
+
+            trimmed.length === 0
+
+              ? 'Task description is required.'
+
+              : 'Task description must be 500 characters or fewer.';
+
+
+          _elError.classList.remove(
+            'is-hidden'
+          );
         }
+
         return;
       }
 
-      // --- Create task object ---
+
+      /* =====================================================
+         PREVENT DUPLICATE TASKS
+         ===================================================== */
+
+      const duplicate =
+        state.tasks.some(
+          function (task) {
+
+            return (
+
+              task.description
+                .trim()
+                .toLowerCase() ===
+
+              trimmed.toLowerCase()
+
+            );
+          }
+        );
+
+
+      if (duplicate) {
+
+        if (_elError) {
+
+          _elError.textContent =
+            'This task already exists.';
+
+          _elError.classList.remove(
+            'is-hidden'
+          );
+        }
+
+        return;
+      }
+
+
       const task = {
-        id:          _generateId(),
+
+        id: _generateId(),
+
         description: trimmed,
-        completed:   false
+
+        completed: false
       };
 
-      // --- Mutate state ---
+
       state.tasks.push(task);
 
-      // --- Persist ---
-      const saved = syncTasks();
+
+      const saved =
+        syncTasks();
+
+
       if (!saved) {
-        // Roll back the push so in-memory state stays consistent with storage
+
         state.tasks.pop();
+
+
         if (_elStorageError) {
-          _elStorageError.textContent = 'Could not save task. Please try again.';
-          _elStorageError.classList.remove('is-hidden');
+
+          _elStorageError.textContent =
+            'Could not save task. Please try again.';
+
+          _elStorageError.classList.remove(
+            'is-hidden'
+          );
         }
+
         return;
       }
 
-      // --- Success: update UI ---
+
       tasks.render();
-      if (_elInput)  { _elInput.value = ''; }
-      if (_elError)  { _elError.classList.add('is-hidden'); }
+
+
+      if (_elInput) {
+        _elInput.value = '';
+      }
+
+
+      if (_elError) {
+
+        _elError.classList.add(
+          'is-hidden'
+        );
+      }
+
+
+      if (_elStorageError) {
+
+        _elStorageError.classList.add(
+          'is-hidden'
+        );
+      }
     }
 
+
     /**
-     * Updates the description of an existing task.
-     *
-     * Validation rules (Requirements 3.5, 3.6):
-     *   - Trim newDescription first.
-     *   - Reject if trimmed string is empty or exceeds 500 characters:
-     *     show #task-error and return without changing state.
-     *
-     * On success (Requirement 3.5):
-     *   - Save the original description for rollback.
-     *   - Update task.description (preserve id and completed unchanged).
-     *   - Call syncTasks(); on failure restore original description,
-     *     show #task-storage-error, and call tasks.render().
-     *   - On success: call tasks.render().
-     *
-     * @param {string} id - ID of the task to update
-     * @param {string} newDescription - Replacement description text
+     * Edits an existing task.
+     * @param {string} id
+     * @param {string} newDescription
      */
     function edit(id, newDescription) {
-      const trimmed = (newDescription || '').trim();
 
-      // --- Input validation ---
-      if (trimmed.length === 0 || trimmed.length > 500) {
+      const trimmed =
+        (newDescription || '').trim();
+
+
+      if (
+        trimmed.length === 0 ||
+        trimmed.length > 500
+      ) {
+
         if (_elError) {
-          _elError.textContent = trimmed.length === 0
-            ? 'Task description is required.'
-            : 'Task description must be 500 characters or fewer.';
-          _elError.classList.remove('is-hidden');
+
+          _elError.textContent =
+
+            trimmed.length === 0
+
+              ? 'Task description is required.'
+
+              : 'Task description must be 500 characters or fewer.';
+
+
+          _elError.classList.remove(
+            'is-hidden'
+          );
         }
+
         return;
       }
 
-      // --- Find task by id ---
-      const task = state.tasks.find(function (t) { return t.id === id; });
-      if (!task) return;
 
-      // --- Save original for rollback ---
-      const originalDesc = task.description;
+      const task =
+        state.tasks.find(
+          function (t) {
 
-      // --- Mutate description only; preserve id and completed ---
+            return t.id === id;
+          }
+        );
+
+
+      if (!task) {
+        return;
+      }
+
+
+      const originalDesc =
+        task.description;
+
+
       task.description = trimmed;
 
-      // --- Persist ---
-      const saved = syncTasks();
+
+      const saved =
+        syncTasks();
+
+
       if (!saved) {
-        // Roll back to original description
-        task.description = originalDesc;
+
+        task.description =
+          originalDesc;
+
+
         if (_elStorageError) {
-          _elStorageError.textContent = 'Could not save change. Please try again.';
-          _elStorageError.classList.remove('is-hidden');
+
+          _elStorageError.textContent =
+            'Could not save change. Please try again.';
+
+          _elStorageError.classList.remove(
+            'is-hidden'
+          );
         }
+
+
         tasks.render();
+
         return;
       }
 
-      // --- Success ---
+
       tasks.render();
     }
 
+
     /**
-     * Toggles the completed state of a task (Requirement 3.7).
-     *
-     * - Finds the task by id.
-     * - Flips task.completed boolean.
-     * - Calls syncTasks(); on failure flips it back and shows
-     *   #task-storage-error.
-     * - On success: calls tasks.render().
-     *
-     * @param {string} id - ID of the task to toggle
+     * Toggles the completed state of a task.
+     * @param {string} id
      */
     function toggle(id) {
-      // --- Find task by id ---
-      const task = state.tasks.find(function (t) { return t.id === id; });
-      if (!task) return;
 
-      // --- Flip completed boolean ---
-      task.completed = !task.completed;
+      const task =
+        state.tasks.find(
+          function (t) {
 
-      // --- Persist ---
-      const saved = syncTasks();
-      if (!saved) {
-        // Roll back the flip
-        task.completed = !task.completed;
-        if (_elStorageError) {
-          _elStorageError.textContent = 'Could not save change. Please try again.';
-          _elStorageError.classList.remove('is-hidden');
-        }
+            return t.id === id;
+          }
+        );
+
+
+      if (!task) {
         return;
       }
 
-      // --- Success ---
+
+      task.completed =
+        !task.completed;
+
+
+      const saved =
+        syncTasks();
+
+
+      if (!saved) {
+
+        task.completed =
+          !task.completed;
+
+
+        if (_elStorageError) {
+
+          _elStorageError.textContent =
+            'Could not save change. Please try again.';
+
+          _elStorageError.classList.remove(
+            'is-hidden'
+          );
+        }
+
+        return;
+      }
+
+
       tasks.render();
     }
 
+
     /**
-     * Removes a task from the list by id.
-     * Stub — will be fully implemented in task 7.3.
+     * Deletes a task.
      * @param {string} id
      */
     function deleteFn(id) {
-  const index = state.tasks.findIndex(function (task) {
-    return task.id === id;
-  });
 
-  if (index === -1) return;
+      const index =
+        state.tasks.findIndex(
+          function (task) {
 
-  const deletedTask = state.tasks[index];
+            return task.id === id;
+          }
+        );
 
-  state.tasks.splice(index, 1);
 
-  const saved = syncTasks();
+      if (index === -1) {
+        return;
+      }
 
-  if (!saved) {
-    state.tasks.splice(index, 0, deletedTask);
 
-    if (_elStorageError) {
-      _elStorageError.textContent = 'Could not delete task. Please try again.';
-      _elStorageError.classList.remove('is-hidden');
-    }
+      const deletedTask =
+        state.tasks[index];
 
-    return;
-  }
 
-  tasks.render();
-}
-
-function render() {
-  if (!_elList) return;
-
-  _elList.innerHTML = '';
-
-  state.tasks.forEach(function (task) {
-    const li = document.createElement('li');
-    li.className = 'task-item';
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = task.completed;
-    checkbox.setAttribute('aria-label', 'Mark task as done');
-
-    checkbox.addEventListener('change', function () {
-      tasks.toggle(task.id);
-    });
-
-    const description = document.createElement('span');
-    description.textContent = task.description;
-
-    if (task.completed) {
-      description.classList.add('task-completed');
-    }
-
-    const editButton = document.createElement('button');
-    editButton.type = 'button';
-    editButton.textContent = 'Edit';
-
-    editButton.addEventListener('click', function () {
-      const newDescription = window.prompt(
-        'Edit task:',
-        task.description
+      state.tasks.splice(
+        index,
+        1
       );
 
-      if (newDescription !== null) {
-        tasks.edit(task.id, newDescription);
+
+      const saved =
+        syncTasks();
+
+
+      if (!saved) {
+
+        state.tasks.splice(
+          index,
+          0,
+          deletedTask
+        );
+
+
+        if (_elStorageError) {
+
+          _elStorageError.textContent =
+            'Could not delete task. Please try again.';
+
+          _elStorageError.classList.remove(
+            'is-hidden'
+          );
+        }
+
+        return;
       }
-    });
 
-    const deleteButton = document.createElement('button');
-    deleteButton.type = 'button';
-    deleteButton.textContent = 'Delete';
 
-    deleteButton.addEventListener('click', function () {
-      tasks.delete(task.id);
-    });
+      tasks.render();
+    }
 
-    li.appendChild(checkbox);
-    li.appendChild(description);
-    li.appendChild(editButton);
-    li.appendChild(deleteButton);
-
-    _elList.appendChild(li);
-  });
-}
 
     /**
-     * Caches DOM refs, binds the add-form submit handler, and
-     * calls tasks.render() to hydrate from the already-populated state.
-     * Stub — will be fully implemented in task 7.4.
+     * Sorts tasks alphabetically by task description, A-Z.
+     */
+    function sortAZ() {
+
+      state.tasks.sort(
+        function (a, b) {
+
+          return a.description.localeCompare(
+            b.description,
+            undefined,
+            {
+              sensitivity: 'base'
+            }
+          );
+        }
+      );
+
+
+      syncTasks();
+
+      tasks.render();
+    }
+
+
+    /**
+     * Renders the task list.
+     */
+    function render() {
+
+      if (!_elList) {
+        return;
+      }
+
+
+      _elList.innerHTML = '';
+
+
+      state.tasks.forEach(
+        function (task) {
+
+          const li =
+            document.createElement('li');
+
+          li.className =
+            'task-item';
+
+
+          const checkbox =
+            document.createElement('input');
+
+          checkbox.type =
+            'checkbox';
+
+          checkbox.checked =
+            task.completed;
+
+
+          checkbox.setAttribute(
+            'aria-label',
+            'Mark task as done'
+          );
+
+
+          checkbox.addEventListener(
+            'change',
+            function () {
+
+              tasks.toggle(
+                task.id
+              );
+            }
+          );
+
+
+          const description =
+            document.createElement('span');
+
+          description.textContent =
+            task.description;
+
+
+          if (task.completed) {
+
+            description.classList.add(
+              'task-completed'
+            );
+          }
+
+
+          const editButton =
+            document.createElement('button');
+
+          editButton.type =
+            'button';
+
+          editButton.textContent =
+            'Edit';
+
+
+          editButton.addEventListener(
+            'click',
+            function () {
+
+              const newDescription =
+                window.prompt(
+                  'Edit task:',
+                  task.description
+                );
+
+
+              if (newDescription !== null) {
+
+                tasks.edit(
+                  task.id,
+                  newDescription
+                );
+              }
+            }
+          );
+
+
+          const deleteButton =
+            document.createElement('button');
+
+          deleteButton.type =
+            'button';
+
+          deleteButton.textContent =
+            'Delete';
+
+
+          deleteButton.addEventListener(
+            'click',
+            function () {
+
+              tasks.delete(
+                task.id
+              );
+            }
+          );
+
+
+          li.appendChild(
+            checkbox
+          );
+
+          li.appendChild(
+            description
+          );
+
+          li.appendChild(
+            editButton
+          );
+
+          li.appendChild(
+            deleteButton
+          );
+
+
+          _elList.appendChild(
+            li
+          );
+        }
+      );
+    }
+
+
+    /**
+     * Initializes the Task Manager widget.
      */
     function init() {
-  _elInput        = document.getElementById('task-input');
-  _elError        = document.getElementById('task-error');
-  _elStorageError = document.getElementById('task-storage-error');
-  _elList         = document.getElementById('task-list');
 
-  const form = document.getElementById('task-form');
+      _elInput =
+        document.getElementById(
+          'task-input'
+        );
 
-  if (form) {
-    form.addEventListener('submit', function (event) {
-      event.preventDefault();
 
-      add(_elInput ? _elInput.value : '');
-    });
-  }
+      _elError =
+        document.getElementById(
+          'task-error'
+        );
 
-  tasks.render();
-}
 
-    return { add, edit, toggle, delete: deleteFn, render, init };
+      _elStorageError =
+        document.getElementById(
+          'task-storage-error'
+        );
+
+
+      _elList =
+        document.getElementById(
+          'task-list'
+        );
+
+
+      const sortButton =
+        document.getElementById(
+          'task-sort'
+        );
+
+
+      if (sortButton) {
+
+        sortButton.addEventListener(
+          'click',
+          function () {
+
+            tasks.sortAZ();
+          }
+        );
+      }
+
+
+      const form =
+        document.getElementById(
+          'task-form'
+        );
+
+
+      if (form) {
+
+        form.addEventListener(
+          'submit',
+          function (event) {
+
+            event.preventDefault();
+
+
+            add(
+              _elInput
+                ? _elInput.value
+                : ''
+            );
+          }
+        );
+      }
+
+
+      tasks.render();
+    }
+
+
+    return {
+
+      add,
+
+      edit,
+
+      toggle,
+
+      delete: deleteFn,
+
+      sortAZ,
+
+      render,
+
+      init
+    };
+
   })();
 
-    const links = (function () {
 
-    // DOM refs
+  /* =========================================================
+     [7] QUICK LINKS WIDGET
+     ========================================================= */
+
+  const links = (function () {
+
     let _elLabel = null;
     let _elUrl = null;
     let _elError = null;
     let _elStorageError = null;
     let _elList = null;
 
+
+    /**
+     * Generates a unique link ID.
+     * @returns {string}
+     */
     function _generateId() {
-      return (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+
+      return (
+
+        typeof crypto !== 'undefined' &&
+
+        typeof crypto.randomUUID === 'function'
+
+      )
+
         ? crypto.randomUUID()
+
         : Date.now().toString();
     }
 
-    function add(label, url) {
-      const trimmedLabel = (label || '').trim();
-      const trimmedUrl = (url || '').trim();
 
-      // Validate label
+    /**
+     * Adds a new quick link.
+     * @param {string} label
+     * @param {string} url
+     */
+    function add(label, url) {
+
+      const trimmedLabel =
+        (label || '').trim();
+
+      const trimmedUrl =
+        (url || '').trim();
+
+
       if (trimmedLabel.length === 0) {
+
         if (_elError) {
-          _elError.textContent = 'Link label is required.';
-          _elError.classList.remove('is-hidden');
+
+          _elError.textContent =
+            'Link label is required.';
+
+          _elError.classList.remove(
+            'is-hidden'
+          );
         }
+
         return;
       }
 
-      // Validate URL
+
       let validUrl;
 
-      try {
-        validUrl = new URL(trimmedUrl);
 
-        if (validUrl.protocol !== 'http:' && validUrl.protocol !== 'https:') {
-          throw new Error('Invalid protocol');
+      try {
+
+        validUrl =
+          new URL(trimmedUrl);
+
+
+        if (
+          validUrl.protocol !== 'http:' &&
+          validUrl.protocol !== 'https:'
+        ) {
+
+          throw new Error(
+            'Invalid protocol'
+          );
         }
+
+
       } catch (_e) {
+
         if (_elError) {
-          _elError.textContent = 'Please enter a valid URL.';
-          _elError.classList.remove('is-hidden');
+
+          _elError.textContent =
+            'Please enter a valid URL.';
+
+          _elError.classList.remove(
+            'is-hidden'
+          );
         }
+
         return;
       }
 
+
       const link = {
+
         id: _generateId(),
+
         label: trimmedLabel,
+
         url: validUrl.href
       };
 
+
       state.links.push(link);
 
-      const saved = syncLinks();
+
+      const saved =
+        syncLinks();
+
 
       if (!saved) {
+
         state.links.pop();
 
+
         if (_elStorageError) {
-          _elStorageError.textContent = 'Could not save link. Please try again.';
-          _elStorageError.classList.remove('is-hidden');
+
+          _elStorageError.textContent =
+            'Could not save link. Please try again.';
+
+          _elStorageError.classList.remove(
+            'is-hidden'
+          );
         }
 
         return;
       }
 
+
       links.render();
+
 
       if (_elLabel) {
         _elLabel.value = '';
       }
 
+
       if (_elUrl) {
         _elUrl.value = '';
       }
 
+
       if (_elError) {
-        _elError.classList.add('is-hidden');
+
+        _elError.classList.add(
+          'is-hidden'
+        );
       }
 
+
       if (_elStorageError) {
-        _elStorageError.classList.add('is-hidden');
+
+        _elStorageError.classList.add(
+          'is-hidden'
+        );
       }
     }
 
+
+    /**
+     * Deletes a quick link.
+     * @param {string} id
+     */
     function deleteFn(id) {
-      const index = state.links.findIndex(function (link) {
-        return link.id === id;
-      });
 
-      if (index === -1) return;
+      const index =
+        state.links.findIndex(
+          function (link) {
 
-      const deletedLink = state.links[index];
+            return link.id === id;
+          }
+        );
 
-      state.links.splice(index, 1);
 
-      const saved = syncLinks();
+      if (index === -1) {
+        return;
+      }
+
+
+      const deletedLink =
+        state.links[index];
+
+
+      state.links.splice(
+        index,
+        1
+      );
+
+
+      const saved =
+        syncLinks();
+
 
       if (!saved) {
-        state.links.splice(index, 0, deletedLink);
+
+        state.links.splice(
+          index,
+          0,
+          deletedLink
+        );
+
 
         if (_elStorageError) {
-          _elStorageError.textContent = 'Could not delete link. Please try again.';
-          _elStorageError.classList.remove('is-hidden');
+
+          _elStorageError.textContent =
+            'Could not delete link. Please try again.';
+
+          _elStorageError.classList.remove(
+            'is-hidden'
+          );
         }
 
         return;
       }
 
+
       links.render();
     }
 
+
+    /**
+     * Renders the quick links list.
+     */
     function render() {
-      if (!_elList) return;
+
+      if (!_elList) {
+        return;
+      }
+
 
       _elList.innerHTML = '';
 
-      state.links.forEach(function (link) {
-        const li = document.createElement('li');
-        li.className = 'link-item';
 
-        const anchor = document.createElement('a');
-        anchor.href = link.url;
-        anchor.textContent = link.label;
-        anchor.target = '_blank';
-        anchor.rel = 'noopener noreferrer';
+      state.links.forEach(
+        function (link) {
 
-        const deleteButton = document.createElement('button');
-        deleteButton.type = 'button';
-        deleteButton.textContent = 'Delete';
+          const li =
+            document.createElement('li');
 
-        deleteButton.addEventListener('click', function () {
-          links.delete(link.id);
-        });
+          li.className =
+            'link-item';
 
-        li.appendChild(anchor);
-        li.appendChild(deleteButton);
 
-        _elList.appendChild(li);
-      });
+          const anchor =
+            document.createElement('a');
+
+          anchor.href =
+            link.url;
+
+          anchor.textContent =
+            link.label;
+
+          anchor.target =
+            '_blank';
+
+          anchor.rel =
+            'noopener noreferrer';
+
+
+          const deleteButton =
+            document.createElement('button');
+
+          deleteButton.type =
+            'button';
+
+          deleteButton.textContent =
+            'Delete';
+
+
+          deleteButton.addEventListener(
+            'click',
+            function () {
+
+              links.delete(
+                link.id
+              );
+            }
+          );
+
+
+          li.appendChild(
+            anchor
+          );
+
+          li.appendChild(
+            deleteButton
+          );
+
+
+          _elList.appendChild(
+            li
+          );
+        }
+      );
     }
 
+
+    /**
+     * Initializes the Quick Links widget.
+     */
     function init() {
 
-  _elLabel = document.getElementById('link-label-input');
-  _elUrl = document.getElementById('link-url-input');
-  _elError = document.getElementById('link-error');
-      _elStorageError = document.getElementById('link-storage-error');
-      _elList = document.getElementById('link-list');
+      _elLabel =
+        document.getElementById(
+          'link-label-input'
+        );
 
-      const form = document.getElementById('link-form');
+
+      _elUrl =
+        document.getElementById(
+          'link-url-input'
+        );
+
+
+      _elError =
+        document.getElementById(
+          'link-error'
+        );
+
+
+      _elStorageError =
+        document.getElementById(
+          'link-storage-error'
+        );
+
+
+      _elList =
+        document.getElementById(
+          'link-list'
+        );
+
+
+      const form =
+        document.getElementById(
+          'link-form'
+        );
+
 
       if (form) {
-        form.addEventListener('submit', function (event) {
-          event.preventDefault();
 
-          add(
-            _elLabel ? _elLabel.value : '',
-            _elUrl ? _elUrl.value : ''
-          );
-        });
+        form.addEventListener(
+          'submit',
+          function (event) {
+
+            event.preventDefault();
+
+
+            add(
+
+              _elLabel
+                ? _elLabel.value
+                : '',
+
+              _elUrl
+                ? _elUrl.value
+                : ''
+            );
+          }
+        );
       }
+
 
       links.render();
     }
 
+
     return {
+
       add,
+
       delete: deleteFn,
+
       render,
+
       init
     };
 
   })();
+
+
   /* =========================================================
-   * [8] STORAGE SYNC HELPERS
-   * ========================================================= */
+     [8] STORAGE SYNC HELPERS
+     ========================================================= */
+
 
   /**
-   * Serialises the current in-memory task list and writes it to
-   * localStorage under the key 'tdl_tasks'.
-   *
-   * @returns {boolean} true if the write succeeded, false otherwise
+   * Saves the current task list.
+   * @returns {boolean}
    */
   function syncTasks() {
-    return storage.write('tdl_tasks', state.tasks);
+
+    return storage.write(
+      'tdl_tasks',
+      state.tasks
+    );
   }
+
 
   /**
-   * Serialises the current in-memory links list and writes it to
-   * localStorage under the key 'tdl_links'.
-   * Stub — will be called once the Quick Links widget is implemented.
-   *
-   * @returns {boolean} true if the write succeeded, false otherwise
+   * Saves the current links list.
+   * @returns {boolean}
    */
   function syncLinks() {
-    return storage.write('tdl_links', state.links);
+
+    return storage.write(
+      'tdl_links',
+      state.links
+    );
   }
+
 
   /* =========================================================
- * [9] BOOTSTRAP
- * ========================================================= */
+     [9] BOOTSTRAP
+     ========================================================= */
 
-document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener(
+    'DOMContentLoaded',
+    function () {
 
-  const savedTasks = storage.read('tdl_tasks');
+      const savedTasks =
+        storage.read('tdl_tasks');
 
-  if (Array.isArray(savedTasks)) {
 
-    state.tasks = savedTasks;
+      if (Array.isArray(savedTasks)) {
 
-  }
+        state.tasks =
+          savedTasks;
+      }
 
-  const savedLinks = storage.read('tdl_links');
 
-  if (Array.isArray(savedLinks)) {
+      const savedLinks =
+        storage.read('tdl_links');
 
-    state.links = savedLinks;
 
-  }
+      if (Array.isArray(savedLinks)) {
 
-  clock.init();
+        state.links =
+          savedLinks;
+      }
 
-  timer.init();
-
-  tasks.init();
-
-  links.init();
-
-});
+      theme.init();
+      customName.init();
+      clock.init();
+      timer.init();
+      tasks.init();
+      links.init();
+    }
+  );
 
 })();
